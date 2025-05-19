@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #E57373; /* Light red */
+  --color-primary-dark: #C62828; /* Dark red */
+  --color-secondary: #81C784; /* Light green */
+  --color-secondary-dark: #2E7D32; /* Dark green */
+  --color-accent: #FFB74D; /* Orange */
+  --color-text: #333333;
+  --color-text-light: #666666;
+  --color-background: #FFF8F0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Playfair Display', serif;
+  line-height: 1.2;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Card Components */
+.recipe-card {
+  @apply bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300;
+}
+
+.recipe-card:hover {
+  @apply shadow-lg transform -translate-y-1;
+}
+
+/* Buttons */
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+}
+
+.btn-primary {
+  @apply bg-[#E57373] text-white hover:bg-[#C62828];
+}
+
+.btn-secondary {
+  @apply bg-[#81C784] text-white hover:bg-[#2E7D32];
+}
+
+.btn-outline {
+  @apply border border-[#E57373] text-[#E57373] hover:bg-[#E57373] hover:text-white;
+}
+
+/* Form Elements */
+input, select, textarea {
+  @apply w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#E57373];
+}
+
+/* Animation Classes */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(-20px);
+  opacity: 0;
+}
