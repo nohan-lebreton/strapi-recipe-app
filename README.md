@@ -1,10 +1,10 @@
 # Application de Recettes de Cuisine
 
-![Capture d'écran de la page d'accueil](./image/home.png)
+![Capture d'écran de la page d'accueil](./doc/image/home.png)
 
 *Page d'accueil de l'application SavoryBites : recherche, navigation par catégories, et accès rapide aux recettes populaires.*
 
-![Capture d'écran du formulaire de création de recette](./image/create.png)
+![Capture d'écran du formulaire de création de recette](./doc/image/create.png)
 
 *Formulaire de création d'une nouvelle recette : saisie des informations, ajout d'ingrédients, d'instructions et gestion de l'image.*
 
