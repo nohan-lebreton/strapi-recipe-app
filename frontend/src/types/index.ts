@@ -3,7 +3,7 @@ export interface Recipe {
   documentId: string
   title: string
   description: string
-  image: string
+  image: string | File
   time: number
   difficulty: string
   category: string
@@ -11,4 +11,4 @@ export interface Recipe {
   isFavorite: boolean
   ingredients: string[]
   instructions: string[]
-}
+} 

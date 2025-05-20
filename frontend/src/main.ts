@@ -10,15 +10,17 @@ import RecipeDetail from './pages/RecipeDetail.vue'
 import Categories from './pages/Categories.vue'
 import Favorites from './pages/Favorites.vue'
 import CreateRecipe from './pages/CreateRecipe.vue'
+import EditRecipe from './pages/EditRecipe.vue'
 
 // Create router
 const routes = [
   { path: '/', name: 'home', component: Home },
-  { path: '/recipe/:id', name: 'recipe-detail', component: RecipeDetail },
+  { path: '/recipe/:documentId', name: 'recipe-detail', component: RecipeDetail, props: true },
   { path: '/categories', name: 'categories', component: Categories },
   { path: '/categories/:category', name: 'category', component: Home },
   { path: '/favorites', name: 'favorites', component: Favorites },
-  { path: '/create', name: 'create-recipe', component: CreateRecipe }
+  { path: '/create', name: 'create-recipe', component: CreateRecipe },
+  { path: '/edit/:documentId', name: 'edit-recipe', component: EditRecipe, props: true }
 ]
 
 const router = createRouter({

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useRecipeStore } from '../stores/recipeStore'
 import axios from 'axios'
 
 const router = useRouter()
+const route = useRoute()
 const recipeStore = useRecipeStore()
 
 const difficultyOptions = [
@@ -36,6 +37,7 @@ const recipe = ref({
 
 const imageUrl = ref('')
 const imageFile = ref<File | null>(null)
+const currentImageUrl = ref('')
 
 const addIngredient = () => {
   recipe.value.ingredients.push('')
@@ -57,12 +59,10 @@ const handleImageChange = (e: Event) => {
   const target = e.target as HTMLInputElement
   if (target.files && target.files[0]) {
     const file = target.files[0]
-    // Vérifier la taille du fichier (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert('L\'image ne doit pas dépasser 5MB')
       return
     }
-    // Vérifier le type de fichier
     if (!file.type.startsWith('image/')) {
       alert('Le fichier doit être une image')
       return
@@ -71,9 +71,41 @@ const handleImageChange = (e: Event) => {
   }
 }
 
+const loadRecipe = async () => {
+  const documentId = route.params.documentId
+  console.log('Loading recipe with documentId:', documentId)
+  
+  if (!documentId) {
+    console.error('No documentId provided')
+    router.push('/')
+    return
+  }
+
+  const existingRecipe = recipeStore.recipes.find(r => r.documentId === documentId)
+  
+  if (existingRecipe) {
+    recipe.value = {
+      title: existingRecipe.title,
+      description: existingRecipe.description,
+      time: existingRecipe.time,
+      difficulty: existingRecipe.difficulty,
+      category: existingRecipe.category,
+      rating: existingRecipe.rating,
+      isFavorite: existingRecipe.isFavorite,
+      ingredients: existingRecipe.ingredients.length > 0 ? existingRecipe.ingredients : [''],
+      instructions: existingRecipe.instructions.length > 0 ? existingRecipe.instructions : [''],
+      image: null
+    }
+    currentImageUrl.value = existingRecipe.image
+  } else {
+    console.error('Recipe not found with documentId:', documentId)
+    router.push('/')
+  }
+}
+
 const handleSubmit = async () => {
   try {
-    console.log('Starting recipe creation with data:', recipe.value)
+    console.log('Starting recipe update with data:', recipe.value)
     
     const formData = new FormData()
     formData.append('data[title]', recipe.value.title)
@@ -86,49 +118,78 @@ const handleSubmit = async () => {
     formData.append('data[ingredients]', JSON.stringify(recipe.value.ingredients))
     formData.append('data[instructions]', JSON.stringify(recipe.value.instructions))
 
-    /*
     if (imageFile.value) {
-      console.log('Uploading image:', imageFile.value)
+      console.log('Uploading new image:', imageFile.value)
       formData.append('files', imageFile.value)
     }
-      */
 
-    const response = await axios.post('http://localhost:1337/api/recipes', formData, {
+    const response = await axios.put(`http://localhost:1337/api/recipes/${route.params.documentId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
 
-    console.log('Response from API:', response.data)
-    await router.push('/')
+    if (response.status === 200 && response.data.data) {
+      const updatedData = response.data.data
+      await recipeStore.updateRecipe(route.params.documentId as string, {
+        title: updatedData.title,
+        description: updatedData.description,
+        time: updatedData.time,
+        difficulty: updatedData.difficulty,
+        category: updatedData.category,
+        rating: updatedData.rating,
+        isFavorite: updatedData.isFavorite,
+        ingredients: updatedData.ingredients,
+        instructions: updatedData.instructions,
+        image: updatedData.image && updatedData.image[0]?.url ? `http://localhost:1337${updatedData.image[0].url}` : currentImageUrl.value
+      })
+      router.push('/')
+    }
   } catch (error: any) {
-    console.error('Error creating recipe:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      headers: error.response?.headers
-    })
-    alert('Une erreur est survenue lors de la création de la recette')
+    console.error('Error updating recipe:', error)
+    alert('Une erreur est survenue lors de la mise à jour de la recette')
   }
 }
+
+const handleDelete = async () => {
+  if (confirm('Êtes-vous sûr de vouloir supprimer cette recette ?')) {
+    try {
+      await recipeStore.deleteRecipe(route.params.documentId as string)
+      router.push('/')
+    } catch (error) {
+      console.error('Error deleting recipe:', error)
+      alert('Une erreur est survenue lors de la suppression de la recette')
+    }
+  }
+}
+
+onMounted(loadRecipe)
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl md:text-4xl font-display font-bold mb-8">Create New Recipe</h1>
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-display font-bold">Modifier la Recette</h1>
+      <button
+        @click="handleDelete"
+        class="btn btn-danger"
+      >
+        Supprimer la Recette
+      </button>
+    </div>
     
     <form @submit.prevent="handleSubmit" class="max-w-2xl mx-auto" enctype="multipart/form-data">
       <!-- Basic Information -->
       <div class="space-y-6 mb-8">
         <div>
-          <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Recipe Title</label>
+          <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Titre de la Recette</label>
           <input
             id="title"
             v-model="recipe.title"
             type="text"
             required
             class="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-primary focus:border-primary"
-            placeholder="Enter recipe title"
+            placeholder="Entrez le titre de la recette"
           >
         </div>
         
@@ -140,12 +201,15 @@ const handleSubmit = async () => {
             rows="3"
             required
             class="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-primary focus:border-primary"
-            placeholder="Describe your recipe"
+            placeholder="Décrivez votre recette"
           ></textarea>
         </div>
         
         <div>
           <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+          <div v-if="currentImageUrl" class="mb-4">
+            <img :src="currentImageUrl" alt="Current recipe image" class="w-32 h-32 object-cover rounded-md">
+          </div>
           <input
             id="image"
             type="file"
@@ -153,18 +217,11 @@ const handleSubmit = async () => {
             @change="handleImageChange"
             class="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-primary focus:border-primary"
           >
-          <p class="text-sm text-gray-500 mt-1">Ou entrez une URL d'image</p>
-          <input
-            type="url"
-            v-model="imageUrl"
-            placeholder="URL de l'image"
-            class="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-primary focus:border-primary mt-2"
-          >
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Cooking Time (minutes)</label>
+            <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Temps de Cuisson (minutes)</label>
             <input
               id="time"
               v-model="recipe.time"
@@ -176,7 +233,7 @@ const handleSubmit = async () => {
           </div>
           
           <div>
-            <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+            <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-1">Difficulté</label>
             <select
               id="difficulty"
               v-model="recipe.difficulty"
@@ -188,7 +245,7 @@ const handleSubmit = async () => {
         </div>
         
         <div>
-          <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
           <select
             id="category"
             v-model="recipe.category"
@@ -202,13 +259,13 @@ const handleSubmit = async () => {
       <!-- Ingredients -->
       <div class="mb-8">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-display font-bold">Ingredients</h2>
+          <h2 class="text-xl font-display font-bold">Ingrédients</h2>
           <button
             type="button"
             @click="addIngredient"
             class="text-primary hover:text-primary-dark"
           >
-            + Add Ingredient
+            + Ajouter un Ingrédient
           </button>
         </div>
         
@@ -223,7 +280,7 @@ const handleSubmit = async () => {
               type="text"
               required
               class="flex-1 px-4 py-2 rounded-md border border-gray-300 focus:ring-primary focus:border-primary"
-              placeholder="Enter ingredient"
+              placeholder="Entrez un ingrédient"
             >
             <button
               type="button"
@@ -231,7 +288,7 @@ const handleSubmit = async () => {
               class="text-red-500 hover:text-red-700"
               :disabled="recipe.ingredients.length === 1"
             >
-              Remove
+              Supprimer
             </button>
           </div>
         </div>
@@ -246,7 +303,7 @@ const handleSubmit = async () => {
             @click="addInstruction"
             class="text-primary hover:text-primary-dark"
           >
-            + Add Step
+            + Ajouter une Étape
           </button>
         </div>
         
@@ -261,7 +318,7 @@ const handleSubmit = async () => {
               rows="2"
               required
               class="flex-1 px-4 py-2 rounded-md border border-gray-300 focus:ring-primary focus:border-primary"
-              :placeholder="`Step ${index + 1}`"
+              :placeholder="`Étape ${index + 1}`"
             ></textarea>
             <button
               type="button"
@@ -269,7 +326,7 @@ const handleSubmit = async () => {
               class="text-red-500 hover:text-red-700"
               :disabled="recipe.instructions.length === 1"
             >
-              Remove
+              Supprimer
             </button>
           </div>
         </div>
@@ -281,9 +338,9 @@ const handleSubmit = async () => {
           type="submit"
           class="btn btn-primary"
         >
-          Create Recipe
+          Mettre à Jour la Recette
         </button>
       </div>
     </form>
   </div>
-</template>
+</template> 

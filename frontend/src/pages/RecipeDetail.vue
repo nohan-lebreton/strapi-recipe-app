@@ -9,10 +9,10 @@ const recipeStore = useRecipeStore()
 const isLoading = ref(true)
 const activeTab = ref('ingredients')
 
-const recipeId = computed(() => route.params.id as string)
+const recipeId = computed(() => route.params.documentId as string)
 
 const recipe = computed(() => {
-  return recipeStore.getRecipeById(recipeId.value)
+  return recipeStore.recipes.find(r => r.documentId === recipeId.value)
 })
 
 const difficultyColor = computed(() => {
@@ -32,7 +32,7 @@ const difficultyColor = computed(() => {
 
 const toggleFavorite = () => {
   if (recipe.value) {
-    recipeStore.toggleFavorite(recipe.value.id)
+    recipeStore.toggleFavorite(recipe.value.documentId)
   }
 }
 
