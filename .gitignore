@@ -1,15 +1,8 @@
-# Ignorer tout
-*
-
-# Ne pas ignorer les dossiers
-!*/
-
 # Ne pas ignorer les fichiers .gitignore
 !.gitignore
 
-# Ne pas ignorer le dossier backend et son contenu
+backend/node_modules/
 
-# Ne pas ignorer le dossier frontend et son contenu
-
-# Ignorer les fichiers spécifiques dans frontend
 frontend/node_modules/
+frontend/dist/
+frontend/*.log
