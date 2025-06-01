@@ -1,8 +1,41 @@
 # Ne pas ignorer les fichiers .gitignore
 !.gitignore
 
+# Dependencies
+node_modules/
+frontend/node_modules/
 backend/node_modules/
 
-frontend/node_modules/
+# Build files
 frontend/dist/
-frontend/*.log
+backend/dist/
+backend/build/
+
+# Strapi specific
+backend/.tmp/
+backend/.strapi/
+backend/.strapi-updater.json
+backend/.strapi-cloud.json
+backend/exports/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files (uncomment if you want to ignore .env files)
+# .env
+# .env.local
+# .env.*.local
