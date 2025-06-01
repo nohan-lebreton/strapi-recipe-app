@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "recipes",
+  "info": {
+    "singularName": "recipe",
+    "pluralName": "recipes",
+    "displayName": "Recipe"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "blocks"
+    },
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    },
+    "time": {
+      "type": "integer"
+    },
+    "difficulty": {
+      "type": "enumeration",
+      "enum": [
+        "Facile",
+        "Moyen",
+        "Difficile"
+      ]
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "Entrée",
+        "Plat principal",
+        "Dessert",
+        "Apéritif",
+        "Boisson"
+      ]
+    },
+    "rating": {
+      "type": "integer"
+    },
+    "isFavorite": {
+      "type": "boolean"
+    },
+    "ingredients": {
+      "type": "json"
+    },
+    "instructions": {
+      "type": "json"
+    }
+  }
+}
